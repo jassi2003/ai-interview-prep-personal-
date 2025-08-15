@@ -1,0 +1,20 @@
+# Backend
+backend/node_modules/
+backend/.env
+
+# Frontend
+frontend/interview-prep/node_modules/
+frontend/interview-prep/.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build output
+frontend/interview-prep/build/
+frontend/interview-prep/dist/
+backend/dist/
+
+# OS-specific
+.DS_Store
+Thumbs.db
