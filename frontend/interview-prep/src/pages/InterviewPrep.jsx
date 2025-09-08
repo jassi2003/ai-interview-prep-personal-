@@ -59,6 +59,13 @@ const Interviewprep = () => {
     localStorage.setItem('pinnedQuestions', JSON.stringify(pinned));
   }, [pinned]);
 
+
+
+  // includes() checks if the given id already exists in the array.
+//   If Already Pinned → Remove It
+// prev.filter((pid) => pid !== id)
+// filter() loops over the array and keeps only the items that do not match id.
+
   const togglePin = (id) => {
     setPinned((prev) =>
       prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]

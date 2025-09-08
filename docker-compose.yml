@@ -1,0 +1,128 @@
+# version: "3.9"
+
+# services:
+#   mongodb:
+#     image: mongo:latest
+#     container_name: Ai-mongodb
+#     restart: always
+#     ports:
+#       - "27017:27017"
+#     volumes:
+#       - ./mongo-data:/data/db
+#     networks:
+#       - AIInterviewNet
+
+#   backend:
+#     build:
+#       context: ./backend   # path to your backend Dockerfile
+#       dockerfile: Dockerfile
+#     container_name: AiBackendNet
+#     restart: always
+#     ports:
+#       - "9000:9000"
+#     environment:
+#       - MONGO_URI=mongodb://mongodb:27017/aiapp  # 'mongodb' is the service name
+#       - PORT=9000
+#     depends_on:
+#       - mongodb
+#     networks: 
+#       - AIInterviewNet
+
+#   frontend:
+#     build:
+#       context: ./frontend/interview-prep  # path to your frontend Dockerfile
+#       dockerfile: Dockerfile
+#     container_name: AiFrontendNet
+#     restart: always
+#     ports:
+#       - "5173:5173"
+#     environment:
+#       - VITE_BACKEND_URL=http://localhost:9000  # frontend talks to backend via container name
+#     depends_on: 
+#       - backend
+#     networks:
+#       - AIInterviewNet
+
+# networks:
+#   AIInterviewNet:
+#     driver: bridge
+
+
+
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: Ai-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-data:/data/db
+    networks:
+      - AIInterviewNet
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  backend:
+    image: jaspreet2003/ai-interview-backend:latest
+    #dont need to build the image again directly pull it from dockerhub
+    # build:
+    #   context: ./backend   
+    #   dockerfile: Dockerfile
+    container_name: AiBackendNet
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/aiapp  # 'mongodb' is the service name
+      - PORT=9000
+    depends_on:
+      mongodb:
+        condition: service_healthy   # wait until mongodb is healthy
+    networks: 
+      - AIInterviewNet
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 10s       #runs healthcheck in the interval of every 10s
+      timeout: 5s         #healthcheck is checked for 5s or healthcheck mush complete within 5s otherwise it will considered as failure 
+      retries: 3          #it will make retries
+      start_period: 10s   #it is the warm up time when the container starts,When a container starts, sometimes the service inside (like MongoDB, Node.js, MySQL) needs a few seconds to get ready.
+                          #During this warm-up, healthchecks might fail (because the service isn’t listening yet).
+                          #Without start_period, those failures would count as “bad” and could mark the container unhealthy too soon.
+                          #With start_period: 20s, Docker says:
+                          #For the first 20 seconds after startup, don’t count failures. Just keep checking, and only start counting failures after that time.”
+
+  frontend:
+    image: jaspreet2003/ai-interview-frontend:latest
+
+    # build:
+    #   context: ./frontend/interview-prep 
+    #   dockerfile: Dockerfile
+    container_name: AiFrontendNet
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_BACKEND_URL=http://localhost:9000  #frontend talks to backend via container name
+    depends_on: 
+      backend:
+        condition: service_healthy   # wait until backend is healthy
+    networks:
+      - AIInterviewNet
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+networks:
+  AIInterviewNet:
+    driver: bridge
+

@@ -33,6 +33,11 @@ app.use("/api/ai/generate-questions",protect,generateInterviewQuestions)
 app.use("/api/ai/generate-explanation",protect,generateConceptExplanation)
 
 
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
+
 app.get('/', (req, res) => {
   res.send("server is working");
 });
@@ -40,7 +45,7 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 9000;
 
 connectDb().then(() => {
-  app.listen(PORT, () => {
+  app.listen(PORT,"0.0.0.0", () => {
     console.log("connected to db");
     console.log(`server is listening on port ${PORT}`);
   });

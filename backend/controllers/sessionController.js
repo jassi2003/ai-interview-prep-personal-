@@ -39,6 +39,10 @@ catch(err){
  }
 
  //get all sessions
+
+
+//  .populate("questions") tells Mongoose:
+// "Go to the Question collection, find the documents with these IDs, and replace them with the actual question objects in the result."
 exports.getMySessions = async (req, res) => {
   try {
     const sessions = await Session.find({ user: req.user.id })
